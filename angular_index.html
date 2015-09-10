@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Photo Uploader</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!--Bootstrap-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!--Angular-->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular.min.js"></script>
+    <script src="facebook_factory.js"></script>
+    <script src="angular_script.js"></script>
+    <!--Custom CSS-->
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body ng-app="photoUploader" ng-controller="MainController" class="container">
+    <nav id="myNavbar" class="navbar navbar-default navbar-inverse navbar-custom" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Photo Uploader</a>
+        </div>
+        <div class="collapse navbar-collapse navbar-right" id="navbarCollapse">
+          <ul class="nav navbar-nav">
+            <li>
+              <div class="navbar-right">
+                <img ng-show="loggedIn===true" ng-src="{{picture}}">
+                <small class="text-right"> {{status}} </small>
+                <span id="login_button" class="vcenter">
+                  <fb:login-button scope="public_profile,email,user_events,user_photos,user_groups,publish_actions, rsvp_event, user_about_me"
+                                   onlogin="angular.element(document.getElementById('login_button')).scope().checkLogin()" data-auto-logout-link="true">
+                  </fb:login-button>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        </nav>
+      <div class="clearfix"></div>
+      <div id="content" class="navbar-offset container-fluid" ng-show="loggedIn===true">
+        <button type="button" class="btn btn-default" ng-click="getEvents()">Get Events</button>
+        <ul class="nav nav-pills">
+          <li role="presentation" ng-repeat="event in events">
+            <button type="button" class="btn btn-default" ng-click="getEventPhotos(event.id, event.name)">
+              {{event.name}}
+            </button>
+          </li>
+        </ul>
+        <div id="uploadFileBytton" ng-show="currentEventId !== 0">
+          <button class="floatingPlus btn btn-success" data-toggle="modal" data-target="#photoUploadModal">+</button>
+        </div>
+        <!-- Photo upload modal -->
+        <div id="photoUploadModal" class="modal fade modal-lg" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Upload photos to {{currentEventName}}</h4>
+              </div>
+              <div class="modal-body">
+                <input id="upload_photo" class="btn btn-default" type="file" name="file" multiple/>
+              </div>
+              <div class="modal-footer">
+                <input type="button" class="btn btn-default" ng-hide="submitting===true" type="submit" value="Submit" ng-click="uploadFiles()"/>
+                <input type="button" class="btn btn-default" ng-hide="submitting===false" value="Submitting files">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div ng-repeat="image in eventImages">
+          <div class="row">
+            <div class="col-sm-0 col-md-2 col-lg-2"></div>
+            <div class="card col-sm-12 text-center col-md-8 col-lg-8" >
+              <img class="photos" ng-src="{{image.source}}" ng-click="selectImage(image.source)" data-toggle="modal" data-target="#photoDisplayModal">
+              <blockquote>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
+                  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </p>
+                <div class="clearfix">
+                  <footer class="pull-left">John Doe</footer>
+                </div>
+              </blockquote>
+              <div class="clearfix"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Photo display modal -->
+      <div id="photoDisplayModal" class="modal fade" role="dialog">
+        <div class="modal-dialog large">
+          <div class="modal-content">
+            <div class="modal-body">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <img class="photos" ng-src="{{currentImage}}">
+              <blockquote>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
+                  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </p>
+                <div class="clearfix">
+                  <footer class="pull-left">John Doe</footer>
+                </div>
+              </blockquote>
+            </div>
+            <div class="modal-footer">
+              <blockquote ng-repeat="comment in comments">
+                <div class="pull-left">
+                  <p>
+                    {{comment.comment}}
+                  </p>
+                </div>
+                <div class="clearfix">
+                  <footer>
+                    {{comment.user}}
+                  </footer>
+                </div>
+              </blockquote>
+              <!--<input type="text" id="newComment" placeholder="Comment">-->
+              <textarea type="text" id="newComment" placeholder="Comment"></textarea>
+              <input type="button" class="btn btn-default pull-left"
+                     ng-hide="submitting===true" type="submit" value="Submit"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="whitespace"/>
+      <div class="myFooter">
+        <footer>
+          <p>&copy; Copyright 2015 PhotoUploader</p>
+        </footer>
+      </div>
+      </body>
+    </html>
